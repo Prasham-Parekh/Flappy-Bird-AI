@@ -1,26 +1,48 @@
 import pygame
 import random
 
-pygame.init()
-
-#Screen Dimensions
+# Screen Dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
+
+# Bird Constants 
+JUMP = -10
+GRAVITY = 0.5
+SIZE = 20
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Initialize Pygame
+pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
 clock = pygame.time.Clock()
-running = True
 
-player_pos = pygame.Vector2(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2)
+# Bird Class
+class Bird:
+    def __init__(self):
+        self.x = SCREEN_WIDTH / 5
+        self.y = SCREEN_HEIGHT / 2
+        self.velocity = 0
+    
+    def jump(self):
+        self.velocity += GRAVITY
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    
 
-    pygame.draw.circle(screen, "white", player_pos, 20)
+# Main Game
+def main():
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    pygame.display.flip()
+        screen.fill(WHITE)
+        pygame.draw.circle(screen, BLACK, player_pos, SIZE)
+
+        pygame.display.flip()
 
 
-pygame.quit()
+    pygame.quit()

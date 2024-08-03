@@ -8,7 +8,10 @@ SCREEN_HEIGHT = 800
 # Bird Constants 
 JUMP = -10
 GRAVITY = 0.5
-SIZE = 20
+BIRD_SIZE = 20
+
+# Pipe Constants
+
 
 # Colors
 WHITE = (255, 255, 255)
@@ -27,9 +30,22 @@ class Bird:
         self.velocity = 0
     
     def jump(self):
-        self.velocity += GRAVITY
+        self.velocity = JUMP
 
-    
+    def update(self):
+        self.velocity += GRAVITY
+        self.y += self.velocity
+
+        if (self.y - BIRD_SIZE) < 0:
+            self.y = BIRD_SIZE
+            self.velocity = 0
+        
+        if (self.y + BIRD_SIZE) > SCREEN_HEIGHT:
+            self.y = SCREEN_HEIGHT - BIRD_SIZE
+            self.velocity = 0
+
+# Pipe Class
+
 
 # Main Game
 def main():

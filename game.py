@@ -67,7 +67,7 @@ class Pipe:
 # Main Game
 def main():
     bird = Bird()
-    pipes = []
+    pipes = [Pipe()]
     running = True
     last_pipe_time = pygame.time.get_ticks()
 

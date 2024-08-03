@@ -11,7 +11,10 @@ GRAVITY = 0.5
 BIRD_SIZE = 20
 
 # Pipe Constants
-
+PIPE_GAP = 200
+PIPE_WIDTH = 80
+PIPE_SPEED = 5
+PIPE_FREQUENCY = 1500
 
 # Colors
 WHITE = (255, 255, 255)
@@ -44,8 +47,21 @@ class Bird:
             self.y = SCREEN_HEIGHT - BIRD_SIZE
             self.velocity = 0
 
-# Pipe Class
+    def draw(self):
+        pygame.draw.circle(screen, BLACK, (self.x, self.y), BIRD_SIZE)
 
+# Pipe Class
+class Pipe:
+    def __init__(self):
+        self.x = SCREEN_WIDTH
+        self.height = random.randint(50, SCREEN_HEIGHT - PIPE_GAP - 50)
+    
+    def update(self):
+        self.x -= PIPE_SPEED
+    
+    def draw(self):
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.height))
+        pygame.draw.rect(screen, BLACK, (self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT))
 
 # Main Game
 def main():
@@ -56,7 +72,6 @@ def main():
                 running = False
 
         screen.fill(WHITE)
-        pygame.draw.circle(screen, BLACK, player_pos, SIZE)
 
         pygame.display.flip()
 

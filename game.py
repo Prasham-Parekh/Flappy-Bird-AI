@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 
 # Screen Dimensions
 SCREEN_WIDTH = 1000
@@ -14,7 +15,7 @@ BIRD_SIZE = 20
 PIPE_GAP = 200
 PIPE_WIDTH = 80
 PIPE_SPEED = 5
-PIPE_FREQUENCY = 1500
+PIPE_FREQUENCY = 1000
 
 # Colors
 WHITE = (255, 255, 255)
@@ -65,15 +66,46 @@ class Pipe:
 
 # Main Game
 def main():
+    bird = Bird()
+    pipes = []
     running = True
+    last_pipe_time = pygame.time.get_ticks()
+
     while running:
+        screen.fill(WHITE)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird.jump()
 
-        screen.fill(WHITE)
+        bird.update()
+
+        # gets last pipe time
+        current_time = pygame.time.get_ticks()
+        if current_time - last_pipe_time > PIPE_FREQUENCY:
+            pipes.append(Pipe())
+            last_pipe_time = current_time
+        
+        # updates and draws new pipe
+        for pipe in pipes:
+            pipe.update()
+            pipe.draw()
+
+        # removes pipes that are out of screen
+        pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
+
+        # draws bird
+        bird.draw()
 
         pygame.display.flip()
-
+        clock.tick(60)
 
     pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()

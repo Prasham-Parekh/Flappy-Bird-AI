@@ -51,6 +51,9 @@ class Bird:
     def draw(self):
         pygame.draw.circle(screen, BLACK, (self.x, self.y), BIRD_SIZE)
 
+    def get_rect(self):
+        return pygame.Rect(self.x - BIRD_SIZE, self.y - BIRD_SIZE, BIRD_SIZE * 2, BIRD_SIZE * 2)
+
 # Pipe Class
 class Pipe:
     def __init__(self):
@@ -63,6 +66,31 @@ class Pipe:
     def draw(self):
         pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.height))
         pygame.draw.rect(screen, BLACK, (self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT))
+
+    def get_rects(self):
+        top_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.height)
+        bottom_rect = pygame.Rect(self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT)
+        return top_rect, bottom_rect
+
+# Checks for Collision
+def check_collision(bird, pipes):
+    bird_rect = bird.get_rect()
+    
+    # Check collision with pipes
+    for pipe in pipes:
+        top_rect, bottom_rect = pipe.get_rects()
+        if bird_rect.colliderect(top_rect) or bird_rect.colliderect(bottom_rect):
+            return True
+    
+    # Check collision with ground
+    if bird.y + BIRD_SIZE >= SCREEN_HEIGHT:
+        return True
+    
+    # Check collision with ceiling
+    if bird.y - BIRD_SIZE <= 0:
+        return True
+    
+    return False
 
 # Main Game
 def main():
@@ -100,6 +128,13 @@ def main():
 
         # draws bird
         bird.draw()
+
+         # Check for collisions
+        if check_collision(bird, pipes):
+            # Restart game
+            bird = Bird(Pipe())
+            pipes = []
+            last_pipe_time = pygame.time.get_ticks()
 
         pygame.display.flip()
         clock.tick(60)

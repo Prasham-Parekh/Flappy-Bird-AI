@@ -92,12 +92,17 @@ def check_collision(bird, pipes):
     
     return False
 
+pygame.font.init()
+font = pygame.font.SysFont(None, 50)
+
 # Main Game
 def main():
     bird = Bird()
     pipes = [Pipe()]
     running = True
     last_pipe_time = pygame.time.get_ticks()
+    score = 0
+    high_score = 0
 
     while running:
         screen.fill(WHITE)
@@ -126,15 +131,29 @@ def main():
         # removes pipes that are out of screen
         pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
 
+        # Update score if the bird passes a pipe
+        for pipe in pipes:
+            if pipe.x + PIPE_WIDTH < bird.x and not hasattr(pipe, 'scored'):
+                score += 1
+                pipe.scored = True
+
         # draws bird
         bird.draw()
 
          # Check for collisions
         if check_collision(bird, pipes):
             # Restart game
-            bird = Bird(Pipe())
+            high_score = max(high_score, score)
+            score = 0
+            bird = Bird()
             pipes = []
             last_pipe_time = pygame.time.get_ticks()
+
+        # Display Score
+        score_text = font.render(f"Score: {score}", True, BLACK)
+        high_score_text = font.render(f"High Score: {high_score}", True, BLACK)
+        screen.blit(score_text, (10, 10))
+        screen.blit(high_score_text, (10, 50))
 
         pygame.display.flip()
         clock.tick(60)

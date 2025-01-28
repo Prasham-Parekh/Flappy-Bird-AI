@@ -117,18 +117,18 @@ def main():
 
         bird.update()
 
-        # gets last pipe time
+        # Gets last pipe time
         current_time = pygame.time.get_ticks()
         if current_time - last_pipe_time > PIPE_FREQUENCY:
             pipes.append(Pipe())
             last_pipe_time = current_time
         
-        # updates and draws new pipe
+        # Updates and draws new pipe
         for pipe in pipes:
             pipe.update()
             pipe.draw()
 
-        # removes pipes that are out of screen
+        # Removes pipes that are out of screen
         pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
 
         # Update score if the bird passes a pipe
@@ -137,7 +137,7 @@ def main():
                 score += 1
                 pipe.scored = True
 
-        # draws bird
+        # Draws bird
         bird.draw()
 
          # Check for collisions

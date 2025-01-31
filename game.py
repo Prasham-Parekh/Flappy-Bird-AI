@@ -119,6 +119,9 @@ def draw_window(birds, pipes, score):
     for bird in birds:
         bird.draw()
 
+    score_text = font.render(f"Score: " + str(score), True, BLACK)
+    screen.blit(score_text, (10, 10))
+
     pygame.display.update()
 
 # Main Game

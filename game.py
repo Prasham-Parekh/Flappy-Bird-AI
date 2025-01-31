@@ -9,7 +9,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 # Bird Constants 
-JUMP = -10
+JUMP = -10.5
 GRAVITY = 0.5
 BIRD_SIZE = 20
 
@@ -33,23 +33,28 @@ class Bird:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.height = self.y
         self.velocity = 0
         self.fitness = 0
+        self.tick_count = 0
     
     def jump(self):
         self.velocity = JUMP
+        self.tick_count = 0
+        self.height = self.y
 
     def update(self):
-        self.velocity += GRAVITY
-        self.y += self.velocity
+        self.tick_count += 1
 
-        if (self.y - BIRD_SIZE) < 0:
-            self.y = BIRD_SIZE
-            self.velocity = 0
+        displace = self.velocity*(self.tick_count) + 0.5*(3)*(self.tick_count)**2
         
-        if (self.y + BIRD_SIZE) > SCREEN_HEIGHT:
-            self.y = SCREEN_HEIGHT - BIRD_SIZE
-            self.velocity = 0
+        if displace >= 16:
+            displace = (displace/abs(displace)) * 16
+
+        if displace < 0:
+            displace -= 2
+
+        self.y = self.y + displace
 
     def draw(self):
         pygame.draw.circle(screen, BLACK, (self.x, self.y), BIRD_SIZE)

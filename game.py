@@ -99,7 +99,19 @@ font = pygame.font.SysFont(None, 50)
 
 # Main Game
 def main(genomes, config):
-    bird = Bird()
+    # Game variables
+    bird = []
+    nets = []
+    ge = []
+
+    # Create birds for each genome
+    for genome_id, genome in genomes:
+        genome.fitness = 0
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        nets.append(net)
+        bird.append(Bird(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2))
+        ge.append(genome)
+
     pipes = [Pipe()]
     running = True
     last_pipe_time = pygame.time.get_ticks()

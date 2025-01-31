@@ -1,6 +1,8 @@
 import pygame
 import random
 import sys
+import neat
+import os
 
 # Screen Dimensions
 SCREEN_WIDTH = 1000
@@ -96,7 +98,7 @@ pygame.font.init()
 font = pygame.font.SysFont(None, 50)
 
 # Main Game
-def main():
+def main(genomes, config):
     bird = Bird()
     pipes = [Pipe()]
     running = True
@@ -164,10 +166,18 @@ def main():
 if __name__ == "__main__":
     main()
 
-def run():
+def run(config_path):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
+    
+    p = neat.Population(config)
+
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+
+    winner = p.run(main, 50)
 
 if __name__ == "__main__":
     local_directory = os.path.dirname(__file__)

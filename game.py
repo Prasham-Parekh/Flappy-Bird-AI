@@ -5,7 +5,7 @@ import neat
 import os
 
 # Screen Dimensions
-SCREEN_WIDTH = 1000
+SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 # Bird Constants 
@@ -59,22 +59,28 @@ class Bird:
 
 # Pipe Class
 class Pipe:
-    def __init__(self):
-        self.x = SCREEN_WIDTH
-        self.height = random.randint(50, SCREEN_HEIGHT - PIPE_GAP - 50)
+    def __init__(self, x):
+        self.x = x
+        self.height = 0
+
+        self.top = 0
+        self.bottom = 0
+
         self.passed = False
+        
+        self.set_height()
     
     def update(self):
         self.x -= PIPE_SPEED
+
+    def set_height(self):
+        self.height = random.randrange(50, 450)
+        self.top = self.height
+        self.bottom = self.height + PIPE_GAP
     
     def draw(self):
-        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.height))
-        pygame.draw.rect(screen, BLACK, (self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT))
-
-    def get_rects(self):
-        top_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.height)
-        bottom_rect = pygame.Rect(self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT)
-        return top_rect, bottom_rect
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top))
+        pygame.draw.rect(screen, BLACK, (self.x, self.bottom, PIPE_WIDTH, SCREEN_HEIGHT - self.bottom))
 
 # Checks for Collision
 def check_collision(bird, pipes):
@@ -82,8 +88,10 @@ def check_collision(bird, pipes):
     
     # Check collision with pipes
     for pipe in pipes:
-        top_rect, bottom_rect = pipe.get_rects()
-        if bird_rect.colliderect(top_rect) or bird_rect.colliderect(bottom_rect):
+        top_pipe_rect = pygame.Rect(pipe.x, 0, PIPE_WIDTH, pipe.top)
+        bottom_pipe_rect = pygame.Rect(pipe.x, pipe.bottom, PIPE_WIDTH, SCREEN_HEIGHT - pipe.bottom)
+
+        if bird_rect.colliderect(top_pipe_rect) or bird_rect.colliderect(bottom_pipe_rect):
             return True
     
     # Check collision with ground
@@ -123,9 +131,8 @@ def main(genomes, config):
         birds.append(Bird(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2))
         ge.append(genome)
 
-    pipes = [Pipe()]
+    pipes = [Pipe(700)]
     running = True
-    last_pipe_time = pygame.time.get_ticks()
     score = 0
 
     while running:
@@ -154,12 +161,6 @@ def main(genomes, config):
 
             if output[0] > 0.5:
                 bird.jump()
-
-        # Gets last pipe time
-        current_time = pygame.time.get_ticks()
-        if current_time - last_pipe_time > PIPE_FREQUENCY:
-            pipes.append(Pipe())
-            last_pipe_time = current_time
         
         add_pipe = False
         remove_pipes = []
@@ -185,7 +186,7 @@ def main(genomes, config):
             score += 1
             for g in ge:
                 g.fitness += 5
-            pipes.append(Pipe())
+            pipes.append(Pipe(SCREEN_WIDTH))
 
         for r in remove_pipes:
             pipes.remove(r)
@@ -195,9 +196,6 @@ def main(genomes, config):
                 birds.pop(i)
                 nets.pop(i)
                 ge.pop(i)
-
-        # Removes pipes that are out of screen
-        pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
 
         draw_window(birds, pipes, score)
 

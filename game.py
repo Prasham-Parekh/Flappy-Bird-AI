@@ -133,14 +133,16 @@ def main(genomes, config):
         genome.fitness = 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
-        birds.append(Bird(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2))
+        birds.append(Bird(230, 350))
         ge.append(genome)
 
     pipes = [Pipe(700)]
     running = True
     score = 0
 
-    while running:
+    clock = pygame.time.Clock()
+
+    while running and len(birds) > 0:
         clock.tick(60)
         screen.fill(WHITE)
 
@@ -149,6 +151,7 @@ def main(genomes, config):
                 running = False
                 pygame.quit()
                 quit()
+                break
 
         pipe_ind = 0
         if len(birds) > 0:
@@ -159,10 +162,10 @@ def main(genomes, config):
             break
 
         for i, bird in enumerate(birds):
-            bird.update()
             ge[i].fitness += 0.1
+            bird.update()
 
-            output = nets[i].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].height + PIPE_GAP)))
+            output = nets[i].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
 
             if output[0] > 0.5:
                 bird.jump()

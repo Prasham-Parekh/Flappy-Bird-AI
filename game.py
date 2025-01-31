@@ -139,7 +139,7 @@ def main(genomes, config):
         birds.append(Bird(230, 350))
         ge.append(genome)
 
-    pipes = [Pipe(700)]
+    pipes = [Pipe(600)]
     running = True
     score = 0
 

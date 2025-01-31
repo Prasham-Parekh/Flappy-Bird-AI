@@ -30,10 +30,11 @@ clock = pygame.time.Clock()
 
 # Bird Class
 class Bird:
-    def __init__(self):
-        self.x = SCREEN_WIDTH / 5
-        self.y = SCREEN_HEIGHT / 2
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
         self.velocity = 0
+        self.fitness = 0
     
     def jump(self):
         self.velocity = JUMP
@@ -100,7 +101,7 @@ font = pygame.font.SysFont(None, 50)
 # Main Game
 def main(genomes, config):
     # Game variables
-    bird = []
+    birds = []
     nets = []
     ge = []
 
@@ -109,7 +110,7 @@ def main(genomes, config):
         genome.fitness = 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
-        bird.append(Bird(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2))
+        birds.append(Bird(SCREEN_WIDTH / 5, SCREEN_HEIGHT / 2))
         ge.append(genome)
 
     pipes = [Pipe()]
@@ -118,18 +119,13 @@ def main(genomes, config):
     score = 0
     high_score = 0
 
-    while running:
+    while running and len(birds) > 0:
         screen.fill(WHITE)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-        
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    bird.jump()
-
-        bird.update()
+                pygame.quit()
+                sys.exit()
 
         # Gets last pipe time
         current_time = pygame.time.get_ticks()
@@ -145,38 +141,52 @@ def main(genomes, config):
         # Removes pipes that are out of screen
         pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
 
+        # Processing each bird
+        for i, bird in enumerate(birds):
+            bird.update()
+            bird.draw()
+
+            if len(pipes) > 0:
+                pipe = pipes[0]
+                inputs = [
+                    bird.y / SCREEN_HEIGHT,
+                    pipe.x / SCREEN_WIDTH,
+                    (pipe.height + PIPE_GAP / 2) / SCREEN_HEIGHT
+                ]
+            else:
+                inputs = [bird.y / SCREEN_HEIGHT, 0, 0]
+
+            output = nets[i].activate(inputs)
+            if output[0] > 0.5:
+                bird.jump()
+
+            # Check for collisions
+            if check_collision(bird, pipes):
+            # Restart game
+                ge[i].fitness += score
+                birds.pop(i)
+                nets.pop(i)
+                ge.pop(i)
+
+        for genome in ge:
+            genome.fitness += 0.1
+
         # Update score if the bird passes a pipe
         for pipe in pipes:
-            if pipe.x + PIPE_WIDTH < bird.x and not hasattr(pipe, 'scored'):
+            if pipe.x + PIPE_WIDTH < birds[0].x and not hasattr(pipe, 'scored'):
                 score += 1
+                for genome in ge:
+                    genome.fitness += 1
                 pipe.scored = True
-
-        # Draws bird
-        bird.draw()
-
-         # Check for collisions
-        if check_collision(bird, pipes):
-            # Restart game
-            high_score = max(high_score, score)
-            score = 0
-            bird = Bird()
-            pipes = []
-            last_pipe_time = pygame.time.get_ticks()
 
         # Display Score
         score_text = font.render(f"Score: {score}", True, BLACK)
-        high_score_text = font.render(f"High Score: {high_score}", True, BLACK)
+        #high_score_text = font.render(f"High Score: {high_score}", True, BLACK)
         screen.blit(score_text, (10, 10))
-        screen.blit(high_score_text, (10, 50))
+        #screen.blit(high_score_text, (10, 50))
 
         pygame.display.flip()
         clock.tick(60)
-
-    pygame.quit()
-    sys.exit()
-
-if __name__ == "__main__":
-    main()
 
 def run(config_path):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,

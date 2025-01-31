@@ -9,20 +9,20 @@ Real-time AI Training: The AI learns and evolves by playing multiple generations
 
 **Requirements**
 1. To run the project, you need Python and the following dependencies:
-    Python 3.x
-    Pygame
-    NEAT-Python
+    - Python 3.x
+    - Pygame
+    - NEAT-Python
 2. You can install the dependencies with:
-    pip install pygame
-    pip install neat-python
+    - pip install pygame
+    - pip install neat-python
 
 **How to Run**
 1. Clone this repository to your local machine:
-    git clone https://github.com/Prasham-Parekh/Flappy-Bird-AI.git
+    - git clone https://github.com/Prasham-Parekh/Flappy-Bird-AI.git
 2. Navigate to the project directory:
-    cd Flappy-Bird-AI
+    - cd Flappy-Bird-AI
 3. Run the game using the following command:
-    python main.py
+    - python main.py
 This will start the game, and you will see the AI agents evolve as they attempt to play the game.
 
 **How It Works**

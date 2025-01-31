@@ -17,7 +17,7 @@ BIRD_SIZE = 20
 PIPE_GAP = 200
 PIPE_WIDTH = 80
 PIPE_SPEED = 5
-PIPE_FREQUENCY = 1000
+PIPE_FREQUENCY = 1200
 
 # Colors
 WHITE = (255, 255, 255)
@@ -62,6 +62,7 @@ class Pipe:
     def __init__(self):
         self.x = SCREEN_WIDTH
         self.height = random.randint(50, SCREEN_HEIGHT - PIPE_GAP - 50)
+        self.passed = False
     
     def update(self):
         self.x -= PIPE_SPEED
@@ -98,6 +99,15 @@ def check_collision(bird, pipes):
 pygame.font.init()
 font = pygame.font.SysFont(None, 50)
 
+def draw_window(birds, pipes, score):
+    for pipe in pipes:
+        pipe.draw()
+
+    for bird in birds:
+        bird.draw()
+
+    pygame.display.update()
+
 # Main Game
 def main(genomes, config):
     # Game variables
@@ -106,7 +116,7 @@ def main(genomes, config):
     ge = []
 
     # Create birds for each genome
-    for genome_id, genome in genomes:
+    for _, genome in genomes:
         genome.fitness = 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
@@ -117,15 +127,33 @@ def main(genomes, config):
     running = True
     last_pipe_time = pygame.time.get_ticks()
     score = 0
-    high_score = 0
 
-    while running and len(birds) > 0:
+    while running:
+        clock.tick(60)
         screen.fill(WHITE)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                running = False
                 pygame.quit()
-                sys.exit()
+                quit()
+
+        pipe_ind = 0
+        if len(birds) > 0:
+            if len(pipes) > 1 and birds[0].x > pipes[0].x + PIPE_WIDTH:
+                pipe_ind = 1
+        else:
+            running = False
+            break
+
+        for i, bird in enumerate(birds):
+            bird.update()
+            ge[i].fitness += 0.1
+
+            output = nets[i].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].height + PIPE_GAP)))
+
+            if output[0] > 0.5:
+                bird.jump()
 
         # Gets last pipe time
         current_time = pygame.time.get_ticks()
@@ -133,60 +161,45 @@ def main(genomes, config):
             pipes.append(Pipe())
             last_pipe_time = current_time
         
+        add_pipe = False
+        remove_pipes = []
         # Updates and draws new pipe
         for pipe in pipes:
+            for i, bird in enumerate(birds):
+                if check_collision(bird, pipes):
+                    ge[i].fitness -= 1
+                    birds.pop(i)
+                    nets.pop(i)
+                    ge.pop(i)
+
+                if not pipe.passed and pipe.x < bird.x:
+                    pipe.passed = True
+                    add_pipe = True
+
+            if pipe.x + PIPE_WIDTH < 0:
+                remove_pipes.append(pipe)
+
             pipe.update()
-            pipe.draw()
 
-        # Removes pipes that are out of screen
-        pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
+        if add_pipe:
+            score += 1
+            for g in ge:
+                g.fitness += 5
+            pipes.append(Pipe())
 
-        # Processing each bird
+        for r in remove_pipes:
+            pipes.remove(r)
+
         for i, bird in enumerate(birds):
-            bird.update()
-            bird.draw()
-
-            if len(pipes) > 0:
-                pipe = pipes[0]
-                inputs = [
-                    bird.y / SCREEN_HEIGHT,
-                    pipe.x / SCREEN_WIDTH,
-                    (pipe.height + PIPE_GAP / 2) / SCREEN_HEIGHT
-                ]
-            else:
-                inputs = [bird.y / SCREEN_HEIGHT, 0, 0]
-
-            output = nets[i].activate(inputs)
-            if output[0] > 0.5:
-                bird.jump()
-
-            # Check for collisions
-            if check_collision(bird, pipes):
-            # Restart game
-                ge[i].fitness += score
+            if bird.y > SCREEN_HEIGHT or bird.y < 0:
                 birds.pop(i)
                 nets.pop(i)
                 ge.pop(i)
 
-        for genome in ge:
-            genome.fitness += 0.1
+        # Removes pipes that are out of screen
+        pipes = [pipe for pipe in pipes if pipe.x + PIPE_WIDTH > 0]
 
-        # Update score if the bird passes a pipe
-        for pipe in pipes:
-            if pipe.x + PIPE_WIDTH < birds[0].x and not hasattr(pipe, 'scored'):
-                score += 1
-                for genome in ge:
-                    genome.fitness += 1
-                pipe.scored = True
-
-        # Display Score
-        score_text = font.render(f"Score: {score}", True, BLACK)
-        #high_score_text = font.render(f"High Score: {high_score}", True, BLACK)
-        screen.blit(score_text, (10, 10))
-        #screen.blit(high_score_text, (10, 50))
-
-        pygame.display.flip()
-        clock.tick(60)
+        draw_window(birds, pipes, score)
 
 def run(config_path):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,

@@ -163,3 +163,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def run():
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
+
+if __name__ == "__main__":
+    local_directory = os.path.dirname(__file__)
+    config_path = os.path.join(local_directory, "config-feedforward.txt")
+    run(config_path)
